@@ -12,10 +12,10 @@ import torch.optim as optim
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 64  # mini batch size
-GAMMA = 0.9  # discount factor
-TAU = 1e-1  # for soft update of target parameters
-LR = 0.0001
-UPDATE_EVERY = 50
+GAMMA = 0.99  # discount factor
+TAU = 1e-3  # for soft update of target parameters
+LR = 0.001
+UPDATE_EVERY = 10
 
 
 class Agent:
@@ -31,14 +31,12 @@ class Agent:
         self.action_size = action_size
 
         # Q-Network
-        self.network_local = Network(state_size, action_size)
-        self.network_target = Network(state_size, action_size)
+        self.network_local = Network(state_size, action_size).to(device)
+        self.network_target = Network(state_size, action_size).to(device)
         self.optimiser = optim.Adam(self.network_local.parameters(), lr=LR)
         self.model_choice = model_choice
-
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE)
-
         # Initialise time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
@@ -90,18 +88,14 @@ class Agent:
             pass
 
         q_targets_next = self.network_target(next_states).detach().max(1)[0].unsqueeze(1)
-
         # Compute Q targets for current states
         q_targets = rewards + (gamma * q_targets_next * (1 - dones))
-
         # Get expected Q values from local model
         q_expected = self.network_local(states).gather(1, actions)
-
         # Compute loss
-        loss = F.mse_loss(q_expected, q_targets)
+        loss = F.mse_loss(q_targets, q_expected)
 
         # Minimise the loss
-        self.optimiser.zero_grad()
         loss.backward()
         self.optimiser.step()
 
@@ -142,13 +136,14 @@ class ReplayBuffer:
 
     def add(self, state, action, reward, next_state, done):
         """Add a new experience to memory"""
-        e = self.experience(state)
+        e = self.experience(state, action, reward, next_state, done)
         self.memory.append(e)
 
     def sample(self):
         experiences = random.sample(self.memory, k=self.batch_size)
+
         states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
-        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).float().to(device)
+        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(device)
         rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
         next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float() \
             .to(device)
