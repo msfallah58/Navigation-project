@@ -18,13 +18,13 @@ plt.ion()
 
 agent_global = Agent(state_size=37, action_size=4)
 environment = UnityEnvironment(
-    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=1, seed=1)
+    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=1)
 brain_name = environment.brain_names[0]
 brain = environment.brains[brain_name]
 
 
 # Train the Agent with either DQN or DDQN
-def train_agent(env, agent, n_episodes=500, eps_start=1.0, eps_decay=0.99, eps_min=0.1):
+def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.99, eps_min=0.01):
     """The function trains an agent to navigate in a large, square world
     and collect as many yellow banana as possible. Either DQN or DDQN can be used
 
@@ -56,7 +56,7 @@ def train_agent(env, agent, n_episodes=500, eps_start=1.0, eps_decay=0.99, eps_m
         scores.append(score)  # Add the score of the episode to scores
         eps = max(eps_min, eps_decay * eps)  # Apply epsilon decay
         average_size = int(n_episodes * 0.1)
-
+        print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores[-average_size:])), end="")
         if i_episode % average_size == 0:
             print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode-average_size, np.mean(scores[-average_size:])))
 
