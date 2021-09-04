@@ -13,8 +13,9 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 64  # mini batch size
 GAMMA = 0.9  # discount factor
-TAU = 1e-4  # for soft update of target parameters
-LR = 0.001
+TAU = 1e-1  # for soft update of target parameters
+LR = 0.0001
+UPDATE_EVERY = 50
 
 
 class Agent:
@@ -46,6 +47,7 @@ class Agent:
         self.memory.add(state, action, reward, next_state, done)
 
         # Learn every UPDATE_EVERY time steps
+        self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:
             # If enough samples are available in memory, get random subset and learn
             if len(self.memory) > BATCH_SIZE:
