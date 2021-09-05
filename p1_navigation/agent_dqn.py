@@ -1,21 +1,21 @@
-import torch
-import numpy as np
 import random
 from collections import namedtuple, deque
 
-from model import Network
-
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+from model import Network
+
+device = 'cpu' # torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 BUFFER_SIZE = int(1e5)  # replay buffer size
 BATCH_SIZE = 64  # mini batch size
 GAMMA = 0.99  # discount factor
 TAU = 1e-3  # for soft update of target parameters
 LR = 0.001
-UPDATE_EVERY = 10
+UPDATE_EVERY = 5
 
 
 class Agent:
@@ -93,6 +93,7 @@ class Agent:
         # Get expected Q values from local model
         q_expected = self.network_local(states).gather(1, actions)
         # Compute loss
+        self.optimiser.zero_grad()
         loss = F.mse_loss(q_targets, q_expected)
 
         # Minimise the loss
