@@ -1,12 +1,13 @@
-import torch
-import numpy as np
-from agent_dqn import Agent
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 from unityagents import UnityEnvironment
+
+from agent_dqn import Agent
 
 agent_global = Agent(state_size=37, action_size=4)
 environment = UnityEnvironment(
-    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=1)
+    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=0)
 brain_name = environment.brain_names[0]
 brain = environment.brains[brain_name]
 
@@ -25,6 +26,7 @@ def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.995, eps
 
     """
     eps = eps_start
+    scores = []
 
     for i_episode in range(1, n_episodes + 1):
         state = env.reset(train_mode=True)[brain_name].vector_observations[0]  # Get initial state
