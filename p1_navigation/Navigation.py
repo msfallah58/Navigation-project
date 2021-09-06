@@ -5,17 +5,17 @@ from unityagents import UnityEnvironment
 
 from agent_dqn import Agent
 
-agent_global = Agent(state_size=37, action_size=4)
+agent_global = Agent(state_size=37, action_size=4, model_choice="PER_DDQN")
 environment = UnityEnvironment(
     file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=0)
 brain_name = environment.brain_names[0]
 brain = environment.brains[brain_name]
 
 
-# Train the Agent with either DQN or DDQN
+# Train the Agent with chosen Deep Q_learning Technique
 def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.995, eps_min=0.01):
-    """The function trains an agent to navigate in a large, square world
-    and collect as many yellow banana as possible. Either DQN or DDQN can be used
+    """The function trains an agent using DQN, Double DQN (DDQN) or Prioritised Experience Reply Double DQN (PER_DDQN)
+    techniques. The technique can be chosen when the Agent class is called.
 
     Params
     =========
