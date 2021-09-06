@@ -1,21 +1,22 @@
-import torch
-import numpy as np
-from agent_dqn import Agent
 import matplotlib.pyplot as plt
+import numpy as np
+import torch
 from unityagents import UnityEnvironment
-from collections import deque
 
-agent_global = Agent(seed=0, state_size=37, action_size=4)
+from agent_dqn import Agent
+model_choice = "DQN"
+
+agent_global = Agent(state_size=37, action_size=4, model_choice="DQN")
 environment = UnityEnvironment(
-    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=1)
+    file_name="/home/saber/deep-reinforcement-learning/p1_navigation/Banana_Linux/Banana.x86_64", worker_id=0)
 brain_name = environment.brain_names[0]
 brain = environment.brains[brain_name]
 
 
-# Train the Agent with either DQN or DDQN
+# Train the Agent with chosen Deep Q_learning Technique
 def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.995, eps_min=0.01):
-    """The function trains an agent to navigate in a large, square world
-    and collect as many yellow banana as possible. Either DQN or DDQN can be used
+    """The function trains an agent using DQN or Double DQN (DDQN)
+    techniques. The technique can be chosen when the Agent class is called.
 
     Params
     =========
@@ -25,9 +26,8 @@ def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.995, eps
         eps_decay (float): the decay factor for decreasing epsilon
 
     """
-    scores = []
     eps = eps_start
-    scores_window = deque(maxlen=100)
+    scores = []
 
     for i_episode in range(1, n_episodes + 1):
         state = env.reset(train_mode=True)[brain_name].vector_observations[0]  # Get initial state
@@ -45,14 +45,15 @@ def train_agent(env, agent, n_episodes=1000, eps_start=1.0, eps_decay=0.995, eps
             state = next_state  # Roll over the state to next time step
             if done:
                 break  # If episodes end, stop
-        scores_window.append(score)
         scores.append(score)  # Add the score of the episode to scores
         eps = max(eps_min, eps_decay * eps)  # Apply epsilon decay
-        print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
-        if i_episode % 100 == 0:
-            print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
+        average_size = 100
+        print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores[-average_size:])), end="")
+        if i_episode % average_size == 0:
+            print(
+                '\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode - average_size, np.mean(scores[-average_size:])))
 
-        if np.mean(scores_window) >= 13.0:
+        if np.mean(scores[-average_size:]) >= 13.0:
             torch.save(agent.network_local.state_dict(), 'saved_network.pth')
             break
     return scores
@@ -65,16 +66,11 @@ environment.close()
 fig_1 = plt.figure(1)
 ax = fig_1.add_subplot(111)
 plt.plot(np.arange(len(scores)), scores)
-plt.title('DQN agent')
-plt.ylabel('Score')
-plt.xlabel('Episode #')
-plt.show()
+if model_choice == "DQN":
+    plt.title('DQN agent')
+else:
+    plt.title('DDQN agent')
 
-# plotting the mean score calculated over the next 100 episodes for each current episode
-fig_2 = plt.figure(2)
-ax = fig_2.add_subplot(111)
-plt.plot(np.arange(len(scores_mean)), scores_mean)
-plt.title('DQN agent')
-plt.ylabel('Score for the last 100 episodes')
+plt.ylabel('Score')
 plt.xlabel('Episode #')
 plt.show()
