@@ -24,7 +24,7 @@ Deep Q-networks use neural networks as function approximators for the action-val
     <img src="Readme_figures/nature_dqn_target.png" height="100px">
 </p>
 
-Noting that vanilla DQN can overestimate action values, [Deep Reinforcement Learning with Double Q-learning](https://arxiv.org/abs/1509.06461) proposes an alternative Q target value that takes the argmax of the current Q network when inputted with the next observations. These actions, together with the next observations, are passed into the frozen target network to yield Q values at each update. This new Q target is shown below.
+Noting that DQN can overestimate action values, [Deep Reinforcement Learning with Double Q-learning](https://arxiv.org/abs/1509.06461) proposes an alternative Q target value that takes the argmax of the current Q network when inputted with the next observations. These actions, together with the next observations, are passed into the frozen target network to yield Q values at each update. This new Q target is shown below.
 
 <p align="center">
     <img src="Readme_figures/double_q_target.png" height="70px">
