@@ -24,7 +24,7 @@ learn_iters = 0
 avg_score = 0
 
 
-def train_agent(env=environment, agent=agent_local, n_episodes=10, t_max=100):
+def train_agent(env=environment, agent=agent_local, n_episodes=100, t_max=1000):
     """
     The function trains the network for given number of episodes
     :param env: the environment
