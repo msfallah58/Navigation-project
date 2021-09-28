@@ -60,6 +60,7 @@ class Agent:
             if len(self.memory) > self.batch_size:
                 experiences = self.memory.sample()
                 self.learn(experiences)
+                self.memory.clear_buffer()
 
     def select_action(self, state):
         """
@@ -127,8 +128,7 @@ class Agent:
             total_loss.backward()
             self.optimiser_actor.step()
             self.optimiser_critic.step()
-        self.memory.clear_buffer()
-
+        
 
 class ReplayBuffer:
     """ Fixed-size buffer to store experience tuples"""
