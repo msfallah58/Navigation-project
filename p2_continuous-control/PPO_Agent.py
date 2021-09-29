@@ -7,17 +7,15 @@ import random
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-LR = 1e-4
-EPSILON = 0.1
-BETA = 0.01
-UPDATE_EVERY = 20
+LR = 3e-4
+UPDATE_EVERY = 100
 
 
 class Agent:
     """Interacts with and learns from environment"""
 
     def __init__(self, state_size, action_size, GAMMA=0.99, gae_lambda=0.95,
-                 policy_clip=0.2, BATCH_SIZE=64, BUFFER_SIZE=int(1e5), n_epochs=10):
+                 policy_clip=0.2, BATCH_SIZE=64, n_epochs=10):
         """
         :param state_size: size of state space (int)
         :param action_size: size of action space (int)
@@ -44,11 +42,11 @@ class Agent:
         self.optimiser_critic = optim.Adam(self.critic_network.parameters(), lr=LR)
 
         # Replay memory
-        self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE)
+        self.memory = ReplayBuffer(action_size, BATCH_SIZE)
         # Initialise time step (for updating every UPDATE_EVERY steps)
         self.t_step = 0
 
-    def step(self, state, action, reward, prob, val, done):
+    def step(self, state, action, reward, prob, val, done, time_step):
         # Save experience in replay memory
         self.memory.add(state, action, reward, prob, val, done)
 
@@ -56,10 +54,9 @@ class Agent:
         self.t_step = (self.t_step + 1) % UPDATE_EVERY
         if self.t_step == 0:
             # If enough samples are available in memory, get random subset and learn
-
             if len(self.memory) > self.batch_size:
-                experiences = self.memory.sample()
-                self.learn(experiences)
+                self.learn(time_step)
+                self.memory.clear_buffer()
 
     def select_action(self, state):
         """
@@ -78,17 +75,17 @@ class Agent:
 
         return action, probs, value
 
-    def learn(self, experiences):
+    def learn(self, time_step):
         """
         Update actor and critic networks using given batch of experience tuples
 
-        :param experiences: (Tuple[torch.Variable]): tuple of (state, action, reward, probability, value, done)
+        :param time_step: the finish time of episode
         :return:
         """
 
         for _ in range(self.n_epochs):
 
-            states, actions, rewards, probs, vals, dones = experiences
+            states, actions, rewards, probs, vals, dones, batches = self.memory.rollouts(time_step)
             advantage = np.zeros(len(rewards), dtype=np.float32)
 
             # calculate the advantage for batch
@@ -99,41 +96,42 @@ class Agent:
                     a_t += discount * (rewards[k] + self.gamma * vals[k + 1] * (1 - int(dones[k])) - vals[k])
                     discount *= self.gamma * self.gae_lambda
                 advantage[t] = a_t
-            advantage = torch.tensor(advantage).view(self.batch_size, 1).to(device)
+            advantage = torch.tensor(advantage).to(device)
 
-            # get the distribution of actions and the value of critic
-            dist = self.actor_network(states)
-            critic_value = self.critic_network(states)
-            critic_value = torch.squeeze(critic_value)
+            for batch in batches:
+                states_batch = states[batch]
+                # get the distribution of actions and the value of critic
+                self.optimiser_actor.zero_grad()
+                self.optimiser_critic.zero_grad()
+                dist = self.actor_network(states_batch)
+                critic_value = self.critic_network(states_batch)
+                critic_value = torch.squeeze(critic_value)
 
-            # calculate old and new probabilities and their ratio
-            old_probs = probs
-            new_probs = dist.log_prob(actions)
-            prob_ratio = new_probs.exp() / old_probs.exp()
+                # ca\lculate old and new probabilities and their ratio
+                old_probs = probs[batch]
+                actions_batch = actions[batch]
+                new_probs = dist.log_prob(actions_batch)
+                prob_ratio = new_probs.exp() / old_probs.exp()
+                # calculate the surrogate objective and loss functions
+                weighted_probs = prob_ratio * advantage[batch]
+                clipped = torch.clamp(prob_ratio, 1 - self.policy_clip, 1 + self.policy_clip)
+                weighted_clipped_probs = clipped * advantage[batch]
+                actor_loss = -torch.min(weighted_probs, weighted_clipped_probs).mean()
+                returns = advantage + vals
+                critic_loss = (returns - critic_value) ** 2
+                critic_loss = critic_loss.mean()
+                total_loss = actor_loss + 0.5 * critic_loss
 
-            # calculate the surrogate objective and loss functions
-            weighted_probs = advantage * prob_ratio
-            clipped = torch.clamp(prob_ratio, 1 - self.policy_clip, 1 + self.policy_clip)
-            weighted_clipped_probs = clipped * advantage
-            actor_loss = -torch.min(weighted_probs, weighted_clipped_probs).mean()
-            returns = advantage + vals
-            critic_loss = (returns - critic_value) ** 2
-            critic_loss = critic_loss.mean()
-            total_loss = actor_loss + 0.5 * critic_loss
-
-            # do backpropagation and optimisation
-            self.optimiser_actor.zero_grad()
-            self.optimiser_critic.zero_grad()
-            total_loss.backward()
-            self.optimiser_actor.step()
-            self.optimiser_critic.step()
-        self.memory.clear_buffer()
+                # do backpropagation and optimisation
+                total_loss.backward()
+                self.optimiser_actor.step()
+                self.optimiser_critic.step()
 
 
 class ReplayBuffer:
     """ Fixed-size buffer to store experience tuples"""
 
-    def __init__(self, action_size, buffer_size, batch_size):
+    def __init__(self, action_size, batch_size):
         """
         Initialise a ReplayBuffer object
 
@@ -143,31 +141,31 @@ class ReplayBuffer:
         """
 
         self.action_size = action_size
-        self.buffer = deque(maxlen=buffer_size)
+        self.buffer = deque()
         self.batch_size = batch_size
-        self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "prob", "val", "done"])
+        self.trajectory = namedtuple("Experience", field_names=["state", "action", "reward", "prob", "val", "done"])
 
     def add(self, state, action, reward, prob, val, done):
         """Add a new experience to memory"""
-        e = self.experience(state, action, reward, prob, val, done)
+        e = self.trajectory(state, action, reward, prob, val, done)
         self.buffer.append(e)
 
-    def sample(self):
+    def rollouts(self, time_step):
         """Sample from the experience and returns a batch of states, actions, rewards, probabilities, values, dones"""
-
-        experiences = random.sample(self.buffer, k=self.batch_size)
-
-        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
-        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).long().to(device)
-        rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
-        probs = torch.from_numpy(np.vstack([e.prob for e in experiences if e is not None])).float() \
+        states = torch.from_numpy(np.vstack([e.state for e in self.buffer if e is not None])).float().to(device)
+        actions = torch.from_numpy(np.vstack([e.action for e in self.buffer if e is not None])).long().to(device)
+        rewards = torch.from_numpy(np.vstack([e.reward for e in self.buffer if e is not None])).float().to(device)
+        probs = torch.from_numpy(np.vstack([e.prob for e in self.buffer if e is not None])).float() \
             .to(device)
-        vals = torch.from_numpy(np.vstack([e.val for e in experiences if e is not None])).float() \
+        vals = torch.from_numpy(np.vstack([e.val for e in self.buffer if e is not None])).float() \
             .to(device)
-        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float() \
+        dones = torch.from_numpy(np.vstack([e.done for e in self.buffer if e is not None]).astype(np.uint8)).float() \
             .to(device)
-
-        return states, actions, rewards, probs, vals, dones
+        batch_start = np.arange(0, time_step, self.batch_size)
+        indices = np.arange(time_step, dtype=np.int64)
+        np.random.shuffle(indices)
+        batches = [indices[i:i + self.batch_size] for i in batch_start]
+        return states, actions, rewards, probs, vals, dones, batches
 
     def __len__(self):
         """Return the current size of internal memory"""
@@ -175,5 +173,3 @@ class ReplayBuffer:
 
     def clear_buffer(self):
         self.buffer.clear()
-
-
