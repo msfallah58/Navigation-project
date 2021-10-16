@@ -62,5 +62,5 @@ The barrier for solving the second version of the environment is slightly differ
 
 ### Instructions
 
-1. item 1 Install all libraries that has been imported in 
+1. Install all libraries that have been imported in DDPG_main.py, Networks.py, and Agent_DDPG.py 
 Follow the instructions in `DDPG_main` to get started with training your own agent!  
