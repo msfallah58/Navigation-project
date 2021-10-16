@@ -36,7 +36,7 @@ The barrier for solving the second version of the environment is slightly differ
 - After each episode, the rewards that each agent received (without discounting), are added up to get a score for each agent. This yields 20 (potentially different) scores.  The average of these 20 scores is considered. 
 - This yields an **average score** for each episode (where the average is over all 20 agents).
 
-In this project, **Option 2** has been used where the environment is considered solved, when the average (over 100 episodes) of those average scores is at least +30. 
+**Note:** In this project, **Option 2** has been used where the environment is considered solved, when the average (over 100 episodes) of those average scores is at least +30. 
 
 ### Getting Started
 
@@ -58,8 +58,9 @@ In this project, **Option 2** has been used where the environment is considered 
 
     (_For AWS_) If you'd like to train the agent on AWS (and have not [enabled a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md)), then please use [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/one_agent/Reacher_Linux_NoVis.zip) (version 1) or [this link](https://s3-us-west-1.amazonaws.com/udacity-drlnd/P2/Reacher/Reacher_Linux_NoVis.zip) (version 2) to obtain the "headless" version of the environment.  You will **not** be able to watch the agent without enabling a virtual screen, but you will be able to train the agent.  (_To watch the agent, you should follow the instructions to [enable a virtual screen](https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Training-on-Amazon-Web-Service.md), and then download the environment for the **Linux** operating system above._)
 
-2. Place the file in project repository, the same folder as python <your file> folder, and unzip (or decompress) the file. 
+2. Place the file in the project repository, the same folder as python <your file> folder, and unzip (or decompress) the file. 
 
 ### Instructions
 
+1. item 1 Install all libraries that has been imported in 
 Follow the instructions in `DDPG_main` to get started with training your own agent!  
