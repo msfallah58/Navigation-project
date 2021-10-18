@@ -60,7 +60,31 @@ The barrier for solving the second version of the environment is slightly differ
 
 2. Place the file in the project repository, the same folder as python <your file> folder, and unzip (or decompress) the file. 
 
+## Dependencies
+
+To set up your python environment to run the code in this repository, follow the instructions below.
+
+1. Create (and activate) a new environment with Python 3.6.
+
+	- __Linux__ or __Mac__: 
+	```bash
+	conda create --name project_DDPG python=3.6
+	source activate project_DDPG
+	```
+	- __Windows__: 
+	```bash
+	conda create --name project_DDPG python=3.6 
+	activate project_DDPG
+	```
+	
+2. Follow the instructions in [this repository](https://github.com/openai/gym) to perform a minimal install of OpenAI gym.  
+	- Next, install the **classic control** environment group by following the instructions [here](https://github.com/openai/gym#classic-control).
+	- Then, install the **box2d** environment group by following the instructions [here](https://github.com/openai/gym#box2d).
+	
+3. Then, install the dependencies listed in requirements.txt.
+
+
 ### Instructions
 
-1. Install all libraries that have been imported in DDPG_main.py, Networks.py, and Agent_DDPG.py 
-Follow the instructions in `DDPG_main` to get started with training your own agent!  
+1. Visit DDPG_main.py to run the codes, 
+2. Change the hyperparamerters in DDPG_main.py, Networks.py, and Agent_DDPG.py as instructed in the report file.
