@@ -207,6 +207,7 @@ def detect_objects(input_bev_maps, model, configs):
             detections = post_processing(detections, configs)
             detections = detections[0][1]
             print(detections)
+            print(detections)
 
             #######
             ####### ID_S3_EX1-5 END #######     
@@ -221,7 +222,6 @@ def detect_objects(input_bev_maps, model, configs):
     
     for item in detections:
         _, x_bev, y_bev, z_bev, h_bev, w_bev, l_bev, yaw_bev = item
-    ## step 1 : check whether there are any detections
         x = y_bev / configs.bev_height * (configs.lim_x[1] - configs.lim_x[0])
         y = x_bev / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) - (configs.lim_y[1] - configs.lim_y[0])/2.0 
         w = w_bev / configs.bev_width * (configs.lim_y[1] - configs.lim_y[0]) 
@@ -237,7 +237,7 @@ def detect_objects(input_bev_maps, model, configs):
             objects.append([1, x, y, z, h, w, l, yaw])
 
     #######
-    ####### ID_S3_EX2 START #######   
+    ####### ID_S3_EX2 END #######   
     
     return objects    
 

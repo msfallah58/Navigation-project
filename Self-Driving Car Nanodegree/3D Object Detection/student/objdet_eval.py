@@ -76,6 +76,7 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
             best_match = max(matches_lab_det,key=itemgetter(1)) # retrieve entry with max iou in case of multiple candidates   
             ious.append(best_match[0])
             center_devs.append(best_match[1:])
+    print("ious =", ious)
 
 
     ####### ID_S4_EX2 START #######     
@@ -88,6 +89,10 @@ def measure_detection_performance(detections, labels, labels_valid, min_iou=0.5)
     true_positives = len(ious)
     false_negatives = all_positives - true_positives
     false_positives = len(detections) - true_positives
+    
+    print("True positives = ", true_positives)
+    print("False negatives= ", false_negatives)
+    print("False positives = ", false_positives)
     
     #######
     ####### ID_S4_EX2 END #######     

@@ -16,6 +16,7 @@ import numpy as np
 import torch
 import open3d
 import zlib
+from numpy.lib.function_base import percentile
 
 # add project directory to python path to enable relative imports
 import os
@@ -73,12 +74,11 @@ def show_range_image(frame, lidar_name):
     # The code for steps 1-3 is borrowed from Exampple C1-5-1
 
     lidar = [obj for obj in frame.lasers if obj.name == lidar_name][0]  # get laser data structure from frame
-    ri = []
-    if len(lidar.ri_return1.range_image_compressed) > 0:  # use first response
-        ri = dataset_pb2.MatrixFloat()
-        ri.ParseFromString(zlib.decompress(lidar.ri_return1.range_image_compressed))
-        ri = np.array(ri.data).reshape(ri.shape.dims)
-    return ri
+   
+    ri = dataset_pb2.MatrixFloat()
+    ri.ParseFromString(zlib.decompress(lidar.ri_return1.range_image_compressed))
+    ri = np.array(ri.data).reshape(ri.shape.dims)
+  
 
     # The code for step 4 is borrowed from Exampple C1-5-4
     ri[ri < 0] = 0.0
@@ -102,7 +102,7 @@ def show_range_image(frame, lidar_name):
     #######
     ####### ID_S1_EX1 END #######
 
-    return img_range_intensity
+    return img_intensity
 
 
 # create birds-eye view of lidar data
@@ -141,11 +141,11 @@ def bev_from_pcl(lidar_pcl, configs):
     intensity_map = np.zeros((configs.bev_height, configs.bev_width))
     
     lidar_pcl_cpy[lidar_pcl_cpy[:,3]>1.0,3] = 1.0
-    idx_height = np.lexsort((-lidar_pcl_cpy[:, 2], lidar_pcl_cpy[:, 1], lidar_pcl_cpy[:, 0]))
-    lidar_pcl_top = lidar_pcl_cpy[idx_height]
+    idx_intensity = np.lexsort((-lidar_pcl_cpy[:, 2], lidar_pcl_cpy[:, 1], lidar_pcl_cpy[:, 0]))
+    lidar_pcl_top = lidar_pcl_cpy[idx_intensity]
 
-    _, idx_height_unique, counts = np.unique(lidar_pcl_top[:, 0:2], axis=0, return_index=True, return_counts=True)
-    lidar_pcl_top = lidar_pcl_top[idx_height_unique]
+    _, idx_intensity_unique, counts = np.unique(lidar_pcl_top[:, 0:2], axis=0, return_index=True, return_counts=True)
+    lidar_pcl_top = lidar_pcl_top[idx_intensity_unique]
 
     intensity_map[np.int_(lidar_pcl_top[:, 0]), np.int_(lidar_pcl_top[:, 1])] = lidar_pcl_top[:, 3] / (
                 np.amax(lidar_pcl_top[:, 3]) - np.amin(lidar_pcl_top[:, 3]))
