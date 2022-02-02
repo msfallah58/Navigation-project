@@ -29,18 +29,19 @@ class Track:
         M_rot = meas.sensor.sens_to_veh[0:3, 0:3] # rotation matrix from sensor to vehicle coordinates
         
         ############
-        pos_sens = np.zeros((4, 1)) # homogeneous coordinates
+        pos_sens = np.ones((4, 1)) # homogeneous coordinates
         pos_sens[0:3] = meas.z[0:3] 
         pos_veh = meas.sensor.sens_to_veh * pos_sens
-        self.x = np.zeros((6,1))
+        self.x = np.ones((6,1))
         self.x[0:3] = pos_veh[0:3]
+        print('x', self.x)
         
-        P_pos =M_rot * meas.R * np.transpose(M_rot)
+        P_pos = M_rot * meas.R * np.transpose(M_rot)
 
     
-        P_vel = np.matrix([[params.sigma_p44, 0, 0],
-                           [0, params.sigma_p55, 0],
-                           [0, 0, params.sigma_p66]])
+        P_vel = np.matrix([[params.sigma_p44**2, 0, 0],
+                           [0, params.sigma_p55**2, 0],
+                           [0, 0, params.sigma_p66**2]])
 
         # overall covariance initialization
         self.P = np.zeros((6, 6))
