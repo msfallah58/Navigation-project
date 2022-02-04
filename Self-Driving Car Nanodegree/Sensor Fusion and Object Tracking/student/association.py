@@ -85,7 +85,7 @@ class Association:
         elif sensor.name == "camera":
             DOF = 1 # camera DOF,features = (x,y)
         # calculate the Inverse Cumulative Distribution Function (I-CDF) for certain percentile (gating_threshold)
-        limit = chi2.ppf(params.gating_threshold, df=DOF)
+        limit = chi2.ppf(params.gating_threshold, df=sensor.dim_meas)
         if MHD < limit:
             return True
         else:
