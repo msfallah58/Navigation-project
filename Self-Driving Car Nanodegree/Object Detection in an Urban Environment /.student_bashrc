@@ -1,0 +1,11 @@
+source /data/virtual_envs/sdc-c1-gpu-augment/bin/activate
+
+PYTHONPATH=/data/virtual_envs/sdc-c1-gpu-augment/lib/python3.7/site-packages:$PYTHONPATH
+
+LD_LIBRARY_PATH=/opt/miniconda3/envs/sdc-c1-cuda/lib:$LD_LIBRARY_PATH
+
+ln -s /data/waymo/segment-12200383401366682847_2552_140_2572_140_with_camera_labels.tfrecord /home/workspace/data/waymo/test/segment-12200383401366682847_2552_140_2572_140_with_camera_labels.tfrecord
+
+ln -s /data/waymo/segment-10072231702153043603_5725_000_5745_000_with_camera_labels.tfrecord /home/workspace/data/waymo/test/segment-10072231702153043603_5725_000_5745_000_with_camera_labels.tfrecord
+
+ln -s /data/waymo/segment-12012663867578114640_820_000_840_000_with_camera_labels.tfrecord /home/workspace/data/waymo/test/segment-12012663867578114640_820_000_840_000_with_camera_labels.tfrecord
