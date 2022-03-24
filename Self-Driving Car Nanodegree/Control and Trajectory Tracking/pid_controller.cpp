@@ -35,7 +35,7 @@ void PID::UpdateError(double cte) {
    **/
   if (abs(time_step)<0.00001) return;
   double proportional_part = Kp * cte;
-  integral_part += Ki * time_step;
+  integral_part += Ki * time_step * cte;
   double differential_part = Kd * (cte-cte_last)/time_step;
   double control_action = proportional_part + integral_part + differential_part;
   cte_last = cte;
