@@ -1,0 +1,20 @@
+// Answer the following questions:
+
+// Add the plots to your report and explain them (describe what you see)
+// The file just plots the steering output. For some reasons the reference trajectory is zero and the error is high. I tried to find the source of the problem but I couldn't find it. I don't know why the file does not plot the other errors.
+
+// What is the effect of the PID according to the plots, how each part of the PID affects the control command?
+
+// Answer: Proportional controller directs the error towards zero but the large values may unstablise the system. Differential controller improve the stability of the system and integral controller helps to remove the steady state error as explained in the lecture video. 
+
+// How would you design a way to automatically tune the PID parameters?
+
+// Answer: The most interesting approach is to use reinforcement learning technique to update automatically the gains of PID controllers real-time according to driving conditions. Also, it is possible to use classical control techniques such as adaptive controllers to automatically tune the PID gains.
+
+// PID controller is a model free controller, i.e. it does not use a model of the car. Could you explain the pros and cons of this type of controller?
+
+// Answer: the model free control systems such as PID controller make the controller robust against model uncertainties and parameter variations but tunning the gains is a challenge. Another example of model free controllers is reinforcement learning controllers such as value-based techniques and actor-critic techniques. 
+
+// (Optional) What would you do to improve the PID controller?
+
+// Answer: Certainly automatic real-time tuning of PID gains is a great improvments. But other techniques such is integral wind-up can be used to improve the error accumulation due to the integral part of PID controller.  
