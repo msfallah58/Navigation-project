@@ -42,5 +42,7 @@ If error bind is already in use, or address already being used
 
 ## Project Dependencies Overview
 1- CARLA simulator in a workspace.
+
 2- A C++ solver open sources and used in the industry
+
 3- Code to interact with the CARLA simulator
